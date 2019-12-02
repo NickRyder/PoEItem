@@ -13,14 +13,9 @@ def test_parse_clipboard_text():
         for line in file:
             if line != "\n":
                 clipboard_entry = base64.b64decode(line).decode("utf-8")
-                named, unnamed = parse_clipboard_text(clipboard_entry)
-                rarity = named["Rarity"]
-                if rarity not in rarity_to_keys:
-                    rarity_to_keys[rarity] = set()
-                rarity_to_keys[rarity] = rarity_to_keys[rarity].union(set(named.keys()))
-                if rarity == "Rare":
-                    print(clipboard_entry)
-                assert "Rarity" in named.keys(), print(repr(clipboard_entry))
+                parse_clipboard_text(clipboard_entry)
+                # if "Rarity: Rare" in clipboard_entry:
+                #     print(clipboard_entry)
     print(rarity_to_keys.keys())
 
 
