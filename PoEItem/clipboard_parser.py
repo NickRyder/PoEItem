@@ -61,7 +61,9 @@ def _unravel_property_values(property_value):
         if aug_string == property_value[-len(aug_string) :]:
             augmented = True
             property_value = property_value[: -len(aug_string)]
-            assert 
+            assert set([c for c in property_value]).issubset(
+                set(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "-", "+", "%"])
+            ), f"invalid property_value, {property_value}"
 
 
 properties = set(
