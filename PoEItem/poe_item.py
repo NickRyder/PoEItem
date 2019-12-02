@@ -55,7 +55,7 @@ class PoEItem:
 
     note: str = None
     flavourText: List[str] = None
-    flavourTextParsed = List[FlavourTextParsed] = None
+    flavourTextParsed: List[FlavourTextParsed] = None
     descrText: str = None
     secDescrText: str = None
     prophecyText: str = None

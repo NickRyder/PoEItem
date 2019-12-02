@@ -18,10 +18,6 @@ from PoEItem.clipboard_parser import parse_clipboard_text
 #                 #     print(clipboard_entry)
 #     print(rarity_to_keys.keys())
 
-unknown_keys = [
-    "flavourTextParsed",
-]
-
 
 def test_parse_clipboard_text():
     import os
@@ -40,10 +36,9 @@ def test_parse_clipboard_text():
             "utf-8"
         )
         # parse_clipboard_text(clipboard_entry)
-        for key in entry["item"]:
-            if key in unknown_keys:
-                print(key)
-                print(entry["item"][key])
+        if "properties" in entry["item"]:
+            for property in properties:
+                print(property.get("type", ""))
         item_keys = item_keys.union(set(entry["item"].keys()))
     print(item_keys)
 
