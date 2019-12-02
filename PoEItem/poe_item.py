@@ -10,6 +10,34 @@ class PoEItem:
         values: List[List[int]]
         displayMode: int  # TODO: enum
         type: int = None  # TODO: enum
+        type_to_name = [
+            "Map Tier",
+            "Item Quantity",
+            "Item Rarity",
+            "Monster Pack Size",
+            "Level",
+            "Quality",
+            None,
+            None,
+            "Physical Damage",
+            "Elemental Damage",
+            "Chaos Damage",
+            "Critical Strike Chance",
+            "Attacks per Second",
+            "Weapon Range",
+            "Chance to Block",
+            "Armour",
+            "Evasion Rating",
+            "Energy Shield",
+            None,
+            "Experience",
+            "Genus",
+            "Group",
+            "Family",
+            "Radius",
+            "Radius",
+            "Radius",
+        ]
 
     @dataclass
     class Socket:
@@ -36,7 +64,6 @@ class PoEItem:
     h: int = None
     ilvl: int = None
     icon: str = None
-    league: str = None
     sockets: int = None
     name: str = None
     typeLine: str = None  # basetype
