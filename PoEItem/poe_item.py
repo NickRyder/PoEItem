@@ -26,7 +26,7 @@ class PoEItem:
 
     @dataclass
     class FlavourTextParsed:
-        _class: str
+        class_: str
         id: str
         type: str
 
