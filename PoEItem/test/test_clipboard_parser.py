@@ -51,7 +51,5 @@ def test_parse_clipboard_text():
     #     getattr(item, key)
 
 
-
-
 if __name__ == "__main__":
     test_parse_clipboard_text()
