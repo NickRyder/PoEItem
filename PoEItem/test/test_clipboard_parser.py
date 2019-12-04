@@ -18,37 +18,30 @@ from PoEItem.poe_item import PoEItem
 #                 #     print(clipboard_entry)
 #     print(rarity_to_keys.keys())
 
-
 def test_parse_clipboard_text():
+    
+    example = None
+
+
     import os
     import base64
     import json
 
     script_dir = os.path.dirname(__file__)
-    rel_path = "standarditemdataset.txt"
+    rel_path = "itemsfullsetdata.txt"
 
     abs_file_path = os.path.join(script_dir, rel_path)
-    rarity_to_keys = {}
     with open(abs_file_path, "r") as file:
         json_data = json.load(file)
-    item_keys = set()
-    socket_attr = set()
-    socket_color = set()
-    test = {"A": "A", "D": "G", "I": "B", "S": "R", "G": "W"}
     for entry in json_data:
 
         clipboard_entry = base64.b64decode(entry["item"]["extended"]["text"]).decode(
             "utf-8"
         )
-        socket_attr.add(entry["item"].get("frameType", ""))
-        if entry["item"].get("frameType", "") == 9:
-            print(clipboard_entry)
-
-    print(socket_attr)
-    print(socket_color)
-    # item = PoEItem()
-    # for key in item_keys:
-    #     getattr(item, key)
+        parse_clipboard_text(clipboard_entry)
+        if "delve" in entry["item"]:
+            example = clipboard_entry
+    print(example)
 
 
 if __name__ == "__main__":

@@ -25,7 +25,7 @@ class PoEItem:
             ARMOUR = 16
             EVASION_RATING = 17
             ENERGY_SHIELD = 18
-            UNKNOWN_18 = 19
+            UNKNOWN_19 = 19
             EXPERIENCE = 20
             GENUS = 21
             GROUP = 22
