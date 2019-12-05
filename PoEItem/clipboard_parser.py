@@ -30,44 +30,25 @@ index_handlers = {
     "times_twenty": 1 / 20,
 }
 
+formats = ["#%", "+#%", "+#", "#"]
 
-# def dummy():
-#     if format != "ignore":
-#         string_index = insert_condition_indices.index(index)
-#         value = defluffed_affix_line[string_index]
-#         if format == "#%":
-#             value = value[:-1]
-#         elif format == "+#%":
-#             value = value[1:-1]
-#         elif format == "+#":
-#             value = value[1:]
-#         elif format != "#":
-#             raise ValueError("unrecognized format string: " + format)
-#         value = float(value)
-
-#         for index_handler in index_handlers:
-#             value *= index_handlers_multipliers[index_handler]
-#         value = int(value)
-#         if ("min" in condition and condition["min"] > value) or (
-#             "max" in condition and condition["max"] < value
-#         ):
-#             pass
 
 import re
 
 
 def _return_possible_stats_from_explicit_line(explicit_line):
-    re_number_pattern = r"(\+?-?\d+\.?\d*\%?)"
+    re_number_pattern = r"\+?(-?\d+\.?\d*)\%?"
 
     re_result = re.split(re_number_pattern, explicit_line)
     explicit_splits = re_result[::2]
     explicit_numbers = re_result[1::2]
+    possible_stat_results = []
     for stat in stat_translations:
         stat_english = stat["English"]
 
         for stat_entry in stat_english:
             stat_splits = re.split(
-                r"{(\d+)}|" + re_number_pattern, stat_entry["string"]
+                r"\+?-?{(\d+)}\%?|" + re_number_pattern, stat_entry["string"]
             )
             text_splits = stat_splits[::3]
 
@@ -75,6 +56,7 @@ def _return_possible_stats_from_explicit_line(explicit_line):
                 sub_numbers = stat_splits[1::3]
                 text_numbers = stat_splits[2::3]
                 valid_entry = True
+                values = []
                 for sub_index, text_number, explicit_number in zip(
                     sub_numbers, text_numbers, explicit_numbers
                 ):
@@ -83,6 +65,16 @@ def _return_possible_stats_from_explicit_line(explicit_line):
                             valid_entry = False
                     else:
                         format_str = stat_entry["format"][int(sub_index)]
+
+                        # if "%" == format_str[-1]:
+                        #     if explicit_number[-1] != "%":
+                        #         valid_entry = False
+                        #     explicit_number = explicit_number[:-1]
+
+                        # if (explicit_number[0] not in ["+", "-"]) != (
+                        #     format_str[0] not in ["+", "-"]
+                        # ):
+                        #     valid_entry = False
 
                         value = float(explicit_number)
                         for index_handler in stat_entry["index_handlers"][
@@ -96,15 +88,25 @@ def _return_possible_stats_from_explicit_line(explicit_line):
                             valid_entry = False
                         if "max" in conditions and conditions["max"] < value:
                             valid_entry = False
-                    if valid_entry:
-                        print(stat_entry)
+
+                        values.append(value)
+                if valid_entry:
+                    stat_entry = {}
+                    for stat_id, value in zip(stat["ids"], values):
+                        stat_entry[stat_id] = value
+                    possible_stat_results.append(stat_entry)
+    print(possible_stat_results)
+    return possible_stat_results
 
 
-_return_possible_stats_from_explicit_line("+8 to Strength")
-_return_possible_stats_from_explicit_line("Regenerate 5.1 Mana per second")
-_return_possible_stats_from_explicit_line(
-    "Totems gain +9% to all Elemental Resistances"
-)
+# _return_possible_stats_from_explicit_line("+8 to Strength")
+# _return_possible_stats_from_explicit_line("Regenerate 5.1 Mana per second")
+# _return_possible_stats_from_explicit_line(
+#     "Totems gain +9% to all Elemental Resistances"
+# )
+# _return_possible_stats_from_explicit_line("Adds 8 to 9 Physical Damage")
+_return_possible_stats_from_explicit_line("4% reduced Mana Cost of Skills")
+_return_possible_stats_from_explicit_line("6% reduced Mana Reserved")
 # _return_possible_stats_from_explicit_line("Has -1 Abyssal Sockets")
 
 
@@ -203,6 +205,7 @@ properties = set(
         "Group",
         "Family",
         "Radius",
+        "Limited to",
     ]
 )
 
