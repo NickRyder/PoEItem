@@ -56,17 +56,56 @@ index_handlers = {
 import re
 
 
-def _return_stat_from_explicit_line(explicit_line):
-    re.split("\d+\.?\\d*", explicit_line)
+def _return_possible_stats_from_explicit_line(explicit_line):
+    re_number_pattern = r"(\+?-?\d+\.?\d*\%?)"
+
+    re_result = re.split(re_number_pattern, explicit_line)
+    explicit_splits = re_result[::2]
+    explicit_numbers = re_result[1::2]
     for stat in stat_translations:
         stat_english = stat["English"]
+
         for stat_entry in stat_english:
-            stat_entry["string"]
+            stat_splits = re.split(
+                r"{(\d+)}|" + re_number_pattern, stat_entry["string"]
+            )
+            text_splits = stat_splits[::3]
+
+            if explicit_splits == text_splits:
+                sub_numbers = stat_splits[1::3]
+                text_numbers = stat_splits[2::3]
+                valid_entry = True
+                for sub_index, text_number, explicit_number in zip(
+                    sub_numbers, text_numbers, explicit_numbers
+                ):
+                    if text_number is not None:
+                        if text_number != explicit_number:
+                            valid_entry = False
+                    else:
+                        format_str = stat_entry["format"][int(sub_index)]
+
+                        value = float(explicit_number)
+                        for index_handler in stat_entry["index_handlers"][
+                            int(sub_index)
+                        ]:
+                            value *= index_handlers[index_handler]
+                        value = int(value)
+
+                        conditions = stat_entry["condition"][int(sub_index)]
+                        if "min" in conditions and conditions["min"] > value:
+                            valid_entry = False
+                        if "max" in conditions and conditions["max"] < value:
+                            valid_entry = False
+                    if valid_entry:
+                        print(stat_entry)
 
 
-_return_stat_from_explicit_line("")
-
-print(re.split("(\d+\.?\\d*)", "test +31% to Cold Resistance"))
+_return_possible_stats_from_explicit_line("+8 to Strength")
+_return_possible_stats_from_explicit_line("Regenerate 5.1 Mana per second")
+_return_possible_stats_from_explicit_line(
+    "Totems gain +9% to all Elemental Resistances"
+)
+# _return_possible_stats_from_explicit_line("Has -1 Abyssal Sockets")
 
 
 def _parse_text_chunk(text_chunk, sep=": "):
@@ -356,4 +395,5 @@ and into the darkness beyond.
 Corrupted
 """
 if __name__ == "__main__":
-    print(parse_clipboard_text(talisman_entry))
+    pass
+    # print(parse_clipboard_text(talisman_entry))
