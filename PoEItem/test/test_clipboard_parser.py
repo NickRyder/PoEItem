@@ -18,10 +18,10 @@ from PoEItem.poe_item import PoEItem
 #                 #     print(clipboard_entry)
 #     print(rarity_to_keys.keys())
 
-def test_parse_clipboard_text():
-    
-    example = None
 
+def test_parse_clipboard_text():
+
+    example = None
 
     import os
     import base64
@@ -45,4 +45,22 @@ def test_parse_clipboard_text():
 
 
 if __name__ == "__main__":
-    test_parse_clipboard_text()
+    # test_parse_clipboard_text()
+
+    from RePoE import stat_translations
+
+    stat_string_to_ids = {}
+    for stat in stat_translations:
+        ids = stat["ids"]
+        stat_english = stat["English"]
+        for stat_entry in stat_english:
+            stat_string = stat_entry["string"]
+            if stat_string in stat_string_to_ids:
+                print(stat_string)
+                print(ids)
+                print(stat_string_to_ids[stat_string])
+            else:
+                try:
+                    stat_string_to_ids[stat_string] = ids
+                except KeyError:
+                    print(stat_entry)
