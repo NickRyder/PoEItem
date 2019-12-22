@@ -71,8 +71,11 @@ def _validate_stat_translation():
         text_splits_1, sub_numbers_1, text_numbers_1 = s1
         text_splits_2, sub_numbers_2, text_numbers_2 = s2
         if text_splits_1 == text_splits_2:
-            print(s1)
-            print(s2)
+            for sub_number_1, sub_number_2 in zip(sub_numbers_1, sub_numbers_2):
+                if (sub_number_1 is None) != (sub_number_2 is None):
+                    print(s1)
+                    print(s2)
+                    break
 
 
 def _return_possible_stats_from_explicit_line(explicit_line):
@@ -149,32 +152,60 @@ def _find_duplicate_stat_translations(stat_id_pool):
 
     output = {}
     for key, value in string_to_stats.items():
+
         if len(value) > 1:
             output[key] = value
     return output
 
 
+def _validate_duplicate_stat_strings():
+    """
+
+    """
+
+    all_stat_strings = set()
+    stat_string_groups = set()
+    for stat_translation in stat_translations:
+        if "English" in stat_translation:
+            stat_group = set()
+
+            english_stat_translation = stat_translation["English"]
+
+            check_stat_group = False
+            for stat_translation_entry in english_stat_translation:
+                string = stat_translation_entry["string"]
+                if string in all_stat_strings:
+                    check_stat_group = True
+                stat_group.add(string)
+            if check_stat_group:
+                assert (
+                    frozenset(stat_group) in stat_string_groups
+                ), f"stat_translation in two separate groups: {stat_group}"
+            all_stat_strings |= stat_group
+            stat_string_groups.add(frozenset(stat_group))
+
+
 if __name__ == "__main__":
     # test inputs
-    _validate_stat_translation()
-    _return_possible_stats_from_explicit_line("+8 to Strength")
-    _return_possible_stats_from_explicit_line("Regenerate 5.1 Mana per second")
-    _return_possible_stats_from_explicit_line(
-        "Totems gain +9% to all Elemental Resistances"
-    )
-    _return_possible_stats_from_explicit_line("Adds 8 to 9 Physical Damage")
-    _return_possible_stats_from_explicit_line("4% reduced Mana Cost of Skills")
-    _return_possible_stats_from_explicit_line("6% reduced Mana Reserved")
-    _return_possible_stats_from_explicit_line("Has -1 Abyssal Sockets")
-    _return_possible_stats_from_explicit_line(
-        "Adds 1 to 160 Lightning Damage if you haven't Killed Recently"
-    )
-    from PoEItem.clipboard_parser import rare_stats
-    from itertools import chain
+    _validate_duplicate_stat_strings()
+    # _return_possible_stats_from_explicit_line("+8 to Strength")
+    # _return_possible_stats_from_explicit_line("Regenerate 5.1 Mana per second")
+    # _return_possible_stats_from_explicit_line(
+    #     "Totems gain +9% to all Elemental Resistances"
+    # )
+    # _return_possible_stats_from_explicit_line("Adds 8 to 9 Physical Damage")
+    # _return_possible_stats_from_explicit_line("4% reduced Mana Cost of Skills")
+    # _return_possible_stats_from_explicit_line("6% reduced Mana Reserved")
+    # _return_possible_stats_from_explicit_line("Has -1 Abyssal Sockets")
+    # _return_possible_stats_from_explicit_line(
+    #     "Adds 1 to 160 Lightning Damage if you haven't Killed Recently"
+    # )
+    # from PoEItem.clipboard_parser import rare_stats
+    # from itertools import chain
 
-    for key, value in _find_duplicate_stat_translations(rare_stats).items():
-        for sub_key in set(chain.from_iterable(value)):
-            if "local" in sub_key:
-                break
-        else:
-            print(key, value)
+    # for key, value in _find_duplicate_stat_translations(rare_stats).items():
+    #     for sub_key in set(chain.from_iterable(value)):
+    #         if "local" in sub_key:
+    #             break
+    #     else:
+    #         print(key, value)
