@@ -78,6 +78,43 @@ def _validate_stat_translation():
                     break
 
 
+def validate_value_stat_entry(string_values, stat_translation_entry):
+    """throws a ValueError if conditions are not met with given value"""
+    raise NotImplementedError("Need to handle ignore format")
+
+    final_values = []
+    assert len(string_values) == len(
+        stat_translation_entry["format"]
+    ), "value length doesnt match entry"
+
+    string_value_idx = 0
+    for format_, index_handler, condition in zip(
+        stat_translation_entry["format"],
+        stat_translation_entry["index_handlers"],
+        stat_translation_entry["condition"],
+    ):
+        if format_ != "ignore":
+            value = float(string_values[string_value_idx])
+            for handler in index_handler:
+                value *= index_handlers[handler]
+            value = int(value)
+
+            if "min" in condition and condition["min"] > value:
+                raise ValueError(
+                    f"min condition not met : {value} < {condition['min']}"
+                )
+            if "max" in condition and condition["max"] < value:
+                raise ValueError(
+                    f"max condition not met : {value} > {condition['max']}"
+                )
+            final_values.append(value)
+            string_value_idx += 1
+        else:
+            final_values.append(None)
+
+    return final_values
+
+
 def _return_possible_stats_from_explicit_line(explicit_line):
     """
     takes in explicit line
@@ -92,42 +129,36 @@ def _return_possible_stats_from_explicit_line(explicit_line):
     for stat in stat_translations:
         stat_english = stat["English"]
 
-        for stat_entry in stat_english:
+        for stat_translation_entry in stat_english:
             text_splits, sub_numbers, text_numbers = _split_stat_translation(
-                stat_entry["string"]
+                stat_translation_entry["string"]
             )
 
             if explicit_splits == text_splits:
-                values = []
-                for sub_index, text_number, explicit_number in zip(
-                    sub_numbers, text_numbers, explicit_numbers
-                ):
-                    # assert all numbers in pattern not in {} agree with query string
-                    if text_number is not None:
-                        if text_number != explicit_number:
-                            break
-                    else:
-                        format_str = stat_entry["format"][int(sub_index)]
+                string_values = []
+                try:
+                    for sub_index, text_number, explicit_number in zip(
+                        sub_numbers, text_numbers, explicit_numbers
+                    ):
 
-                        value = float(explicit_number)
-                        for index_handler in stat_entry["index_handlers"][
-                            int(sub_index)
-                        ]:
-                            value *= index_handlers[index_handler]
-                        value = int(value)
+                        # assert all numbers in pattern not in {} agree with query string
+                        if text_number is not None:
+                            if text_number != explicit_number:
+                                raise ValueError(
+                                    "numbers from the stat itself dont match"
+                                )
+                        else:
+                            string_values.append(explicit_number)
 
-                        conditions = stat_entry["condition"][int(sub_index)]
-                        if "min" in conditions and conditions["min"] > value:
-                            break
-                        if "max" in conditions and conditions["max"] < value:
-                            break
-
-                        values.append(value)
-                else:
+                    final_values = validate_value_stat_entry(
+                        string_values, stat_translation_entry
+                    )
                     stat_entry = {}
-                    for stat_id, value in zip(stat["ids"], values):
+                    for stat_id, value in zip(stat["ids"], final_values):
                         stat_entry[stat_id] = value
                     possible_stat_results.append(stat_entry)
+                except Exception:
+                    pass
     print(possible_stat_results)
     return possible_stat_results
 
@@ -185,9 +216,25 @@ def _validate_duplicate_stat_strings():
             stat_string_groups.add(frozenset(stat_group))
 
 
+def _validate_ignore_format():
+    for stat_translation in stat_translations:
+        if "English" in stat_translation:
+            english_stat_translation = stat_translation["English"]
+            for translation_entry in english_stat_translation:
+                conditions = translation_entry["condition"]
+                formats = translation_entry["format"]
+                index_handlers = translation_entry["index_handlers"]
+                for condition, format_, index_handler in zip(
+                    conditions, formats, index_handlers
+                ):
+                    if format_ == "ignore":
+                        pass
+
+
 if __name__ == "__main__":
     # test inputs
-    _validate_duplicate_stat_strings()
+    # _validate_duplicate_stat_strings()
+    _validate_ignore_format()
     # _return_possible_stats_from_explicit_line("+8 to Strength")
     # _return_possible_stats_from_explicit_line("Regenerate 5.1 Mana per second")
     # _return_possible_stats_from_explicit_line(
