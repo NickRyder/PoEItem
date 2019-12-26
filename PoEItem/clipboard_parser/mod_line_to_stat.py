@@ -231,10 +231,71 @@ def _validate_ignore_format():
                         pass
 
 
+def _find_duplicate_strat_translations():
+    """
+    Finds all stat strings that show up in two mulitple stat ids
+    """
+    strings = set()
+    for stat_translation in stat_translations:
+        english_stat_translation = stat_translation["English"]
+        for translation_entry in english_stat_translation:
+            groups = re.split(
+                f"{re_insert_pattern}|{re_number_pattern}", translation_entry["string"]
+            )
+            entry = (len(stat_translation["ids"]), tuple(groups[::3]))
+            if entry in strings:
+                print(entry)
+            else:
+                strings.add(entry)
+
+
+def _validate_no_stat_overlap_in_stat_translations():
+    """
+    This validates that every stat shows up in only one stat translations
+    """
+    for stat_translation_1, stat_translation_2 in tqdm(
+        itertools.combinations(stat_translations, 2),
+        total=len(stat_translations) * (len(stat_translations) - 1) / 2,
+    ):
+        assert not set(stat_translation_1["ids"]) & set(
+            stat_translation_2["ids"]
+        ), f"stat with multiple translations {stat_translation_1['ids']}, {stat_translation_2['ids']}"
+
+
+def _validate_index_handlers_duplicates():
+    """ searches through stat translations for inconsistent format entries """
+    for stat_translation in stat_translations:
+        english_stat_translation = stat_translation["English"]
+        translation_string_to_index_handlers = {}
+        for translation_entry in english_stat_translation:
+            string = translation_entry["string"]
+            index_handlers = tuple(translation_entry["index_handlers"])
+            if string in translation_string_to_index_handlers:
+                if index_handlers != translation_string_to_index_handlers[string]:
+                    print("#######")
+                    print(string)
+                    print(index_handlers)
+                    print(translation_string_to_index_handlers[string])
+            translation_string_to_index_handlers[string] = index_handlers
+
+
+def get_condition_pairs():
+    condition_pairs = set()
+    for stat_translation in stat_translations:
+        english_stat_translation = stat_translation["English"]
+        for translation_entry in english_stat_translation:
+            for condition in translation_entry["condition"]:
+                min_ = condition.get("min", None)
+                max_ = condition.get("max", None)
+                condition_pairs.add((min_, max_))
+    return condition_pairs
+
+
 if __name__ == "__main__":
-    # test inputs
-    # _validate_duplicate_stat_strings()
-    _validate_ignore_format()
+    # _validate_no_stat_overlap_in_stat_translations()
+    # get_condition_pairs()
+    _validate_index_handlers_duplicates()
+    # _find_duplicate_strat_translations()
     # _return_possible_stats_from_explicit_line("+8 to Strength")
     # _return_possible_stats_from_explicit_line("Regenerate 5.1 Mana per second")
     # _return_possible_stats_from_explicit_line(
